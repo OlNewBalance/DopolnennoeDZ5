@@ -1,18 +1,34 @@
-﻿namespace HomeWorkNumb2;
+namespace HomeWorkNumb2;
 
 internal class Task5X
 {
+    public enum Currency
+            {
+                JPY,
+                USD,
+                EUR
+            }
     public void Execute()
     {
+        var wallet = new Dictionary<Currency, float>
+        {
+            [Currency.JPY] = 1000f,
+            [Currency.USD] = 1000f,
+            [Currency.EUR] = 1000f
+        };
+        var currencyDiffs = new Dictionary<(Currency from, Currency to), float>
+        {
+            [(Currency.JPY, Currency.USD)] = 1.20f,
+            [(Currency.JPY, Currency.EUR)] = 0.76f,
+            [(Currency.USD, Currency.EUR)] = 5.41f,
+            [(Currency.USD, Currency.JPY)] = 3.7f,
+            [(Currency.EUR, Currency.JPY)] = 8.6f,
+            [(Currency.EUR, Currency.USD)] = 12.56f
+        };
         const string CommandExit = "Exit";
-        const int EuroDollarDiff = 14;
-        const int EuroRubleDiff = 46;
-        const int DollarRubleDiff = 83;
-        int ruble = 1000;
-        int dollar = 1000;
-        int euro = 1000;
         int toConvert = 0;
-        Console.WriteLine("Добро пожаловать в обменник валют, чтобы продолжить, нажмите \"Enter\". Для выхода из программы писать - \"Exit\" ");
+        string input1;
+        Console.WriteLine("Добро пожаловать в обменник валют, чтобы продолжить, нажмите \"Enter\". Для выхода из программы писать - \"exit\" ");
         while (true)
         {
             string input = Console.ReadLine(); 
@@ -23,106 +39,97 @@ internal class Task5X
             }
             if (input == "")
             {
-                Console.WriteLine("Ваш выбор конвертации:");
-                Console.WriteLine("1. Рубли в доллары.");
-                Console.WriteLine("2. Рубли в евро.");
-                Console.WriteLine("3. Доллары в рубли.");
-                Console.WriteLine("4. Доллары в евро.");
-                Console.WriteLine("5. Евро в доллары.");
-                Console.WriteLine("6. Евро в рубли");
-                Console.WriteLine("Просто нажмите цифру нужного действия.");
-                ConsoleKeyInfo keyInfo = Console.ReadKey();
-                switch (keyInfo.Key)
+                Console.WriteLine("Деньги на счету:");
+                Console.WriteLine($"Йена - {wallet [Currency.JPY]}");
+                Console.WriteLine($"Доллар - {wallet [Currency.USD]}");
+                Console.WriteLine($"Евро - {wallet [Currency.EUR]}");
+                Console.WriteLine("Индексы валют:");
+                Console.WriteLine("JPY - йена");
+                Console.WriteLine("USD - доллар");
+                Console.WriteLine("EUR - евро");
+                Console.WriteLine("Чтобы конвертировать, введите сначала \"индекс\" валюты ИЗ которой хотите конвертировать,");
+                Console.WriteLine("... затем валюты В которую, и количество, все через запятую. 1 - ИЗ, 2 - В, 3 - СКОЛЬКО.");
+                input1 = Console.ReadLine();
+                string[] parts = input1.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length == 3)
                 {
-                    case ConsoleKey.D1: // Скопировал твою подсказку, и модифицировал её
-                        Console.WriteLine(" ");
-                        Console.WriteLine("Введите, сколько рублей хотите конвертировать...");
-                        toConvert = int.Parse(Console.ReadLine());
-                        if (toConvert > 0)
+                    string from = parts[0].Trim();
+                    string to = parts[1].Trim();
+                    if (int.TryParse(parts[2].Trim(), out int amount))
+                    {
+                        if (from == "JPY" && to == "EUR" && amount > 0)
                         {
-                            ruble -= toConvert; // с баланса рублей вычитаем введённое с консоли колво рублей для перевода ТВОЕ
-                            int dollarDelta = toConvert / DollarRubleDiff; // вычисляем сколько из введённых рублей получится долларов ТВОЕ
-                            dollar +=  dollarDelta; // прибавляем к доллару счёту полученные из рублей доллары ТВОЕ
                             Console.WriteLine(" ");
-                            Console.WriteLine($"У вас {dollar} долларов...");
-                            Console.WriteLine("Чтобы продолжить, нажмите \"Enter\"");
+                            toConvert = int.Parse(Console.ReadLine());
+                            if (toConvert > 0)
+                            {
+                                wallet [Currency.JPY] -= amount;
+                                float diff = currencyDiffs[(Currency.JPY, Currency.EUR)];
+                                float eurDelta = amount / diff;
+                                wallet [Currency.EUR] += eurDelta;
+                                Console.WriteLine(" ");
+                                Console.WriteLine($"У вас {wallet [Currency.EUR]} евро...");
+                                Console.WriteLine("Для повтора, жать \"Enter\".");
+                            }
                         }
-                        break;
-                    case ConsoleKey.D2:
-                        Console.WriteLine(" ");
-                        Console.WriteLine("Введите, сколько рублей хотите конвертировать...");
-                        toConvert = int.Parse(Console.ReadLine());
-                        if (toConvert > 0)
+                        if (from == "JPY" && to == "USD" && amount > 0)
                         {
-                            ruble -= toConvert;
-                            int euroDelta = toConvert / EuroRubleDiff;
-                            euro += euroDelta;
+                            wallet [Currency.JPY] -= amount;
+                            float diff = currencyDiffs[(Currency.JPY, Currency.USD)];
+                            float usdDelta = amount / diff;
+                            wallet [Currency.USD] += usdDelta;
                             Console.WriteLine(" ");
-                            Console.WriteLine($"У вас {euro} евро...");
-                            Console.WriteLine("Для повтора, жать \"Enter\".");
+                            Console.WriteLine($"У вас {wallet [Currency.USD]} долларов...");
+                            Console.WriteLine("Для повтора, жать \"Enter\".");                                    
                         }
-                        break;
-                    case ConsoleKey.D3:
-                        Console.WriteLine(" ");
-                        Console.WriteLine("Введите, сколько долларов хотите конвертировать...");
-                        toConvert = int.Parse(Console.ReadLine());
-                        if (toConvert > 0)
+                        if (from == "USD" && to == "JPY" && amount > 0)
                         {
-                            dollar -= toConvert;
-                            int rubleDelta = toConvert / DollarRubleDiff;
-                            ruble += rubleDelta;
+                            wallet [Currency.USD] -= amount;
+                            float diff = currencyDiffs[(Currency.USD, Currency.JPY)];
+                            float jpyDelta = amount / diff;
+                            wallet [Currency.JPY] += jpyDelta;
                             Console.WriteLine(" ");
-                            Console.WriteLine($"У вас {ruble} рублей...");
-                            Console.WriteLine("Для повтора, жать \"Enter\".");
+                            Console.WriteLine($"У вас {wallet [Currency.JPY]} йен...");
+                            Console.WriteLine("Для повтора, жать \"Enter\".");                                   
                         }
-
-                        break;
-                    case ConsoleKey.D4:
-                        Console.WriteLine(" ");
-                        Console.WriteLine("Введите, сколько долларов хотите конвертировать...");
-                        toConvert = int.Parse(Console.ReadLine());
-                        if (toConvert > 0)
+                        if (from == "USD" && to == "EUR" && amount > 0)
                         {
-                            dollar -= toConvert;
-                            int euroDelta = toConvert / EuroDollarDiff;
-                            euro += euroDelta;
+                            wallet [Currency.USD] -= amount;
+                            float diff = currencyDiffs[(Currency.USD, Currency.EUR)];
+                            float eurDelta = amount / diff;
+                            wallet [Currency.JPY] += eurDelta;
                             Console.WriteLine(" ");
-                            Console.WriteLine($"У вас {euro} евро...");
-                            Console.WriteLine("Для повтора, жать \"Enter\".");
+                            Console.WriteLine($"У вас {wallet [Currency.EUR]} евро...");
+                            Console.WriteLine("Для повтора, жать \"Enter\".");                                    
                         }
-
-                        break;
-                    case ConsoleKey.D5:
-                        Console.WriteLine(" ");
-                        Console.WriteLine("Введите, сколько евро хотите конвертировать...");
-                        toConvert = int.Parse(Console.ReadLine());
-                        if (toConvert > 0)
+                        if (from == "EUR" && to == "JPY" && amount > 0)
                         {
-                            euro -= toConvert;
-                            int dollarDelta = toConvert / EuroDollarDiff;
-                            dollar += dollarDelta;
+                            wallet [Currency.EUR] -= amount;
+                            float diff = currencyDiffs[(Currency.EUR, Currency.JPY)];
+                            float jpyDelta = amount / diff;
+                            wallet [Currency.JPY] += jpyDelta;
                             Console.WriteLine(" ");
-                            Console.WriteLine($"У вас {dollar} долларов...");
-                            Console.WriteLine("Для повтора, жать \"Enter\".");
+                            Console.WriteLine($"У вас {wallet [Currency.JPY]} йен...");
+                            Console.WriteLine("Для повтора, жать \"Enter\".");                                    
                         }
-
-                        break;
-                    case ConsoleKey.D6:
-                        Console.WriteLine(" ");
-                        Console.WriteLine("Введите, сколько евро хотите конвертировать...");
-                        toConvert = int.Parse(Console.ReadLine());
-                        if (toConvert > 0)
+                        if (from == "EUR" && to == "USD" && amount > 0)
                         {
-                            euro -= toConvert;
-                            int rubleDelta = toConvert / EuroRubleDiff;
-                            ruble += rubleDelta;
+                            wallet [Currency.EUR] -= amount;
+                            float diff = currencyDiffs[(Currency.EUR, Currency.USD)];
+                            float usdDelta = amount / diff;
+                            wallet [Currency.JPY] += usdDelta;
                             Console.WriteLine(" ");
-                            Console.WriteLine($"У вас {ruble} рублей...");
-                            Console.WriteLine("Для повтора, жать \"Enter\".");
-                            break;
+                            Console.WriteLine($"У вас {wallet [Currency.USD]} долларов...");
+                            Console.WriteLine("Для повтора, жать \"Enter\".");                                    
                         }
-                        break;
+                    }
+                    
                 }
+                else
+                {
+                    Console.WriteLine("Ошибка! Напишите - 1) Валюту ИЗ; 2) Валюту В; 3) Количество для перевода. Все это через запятую.");
+                }
+                
             }
         }
     }
